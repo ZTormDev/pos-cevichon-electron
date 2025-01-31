@@ -1,6 +1,5 @@
 name: Build for Windows
 
-# Este workflow se ejecutará manualmente con workflow_dispatch
 on:
   workflow_dispatch:
 
@@ -15,7 +14,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22" # Ajusta la versión de Node.js según tu necesidad
+          node-version: "22"
 
       - name: Install dependencies
         run: npm install
@@ -23,16 +22,19 @@ jobs:
       - name: Making Windows Build
         run: npm run build:win
 
-      # Subir artefactos para Windows
+      - name: List generated files
+        run: ls -R ./build/windows/
+
+      # Subir artefactos para Windows MSI sin importar la versión
       - name: Upload Windows MSI
         uses: actions/upload-artifact@v4
         with:
           name: pos-cevichon-installer
-          path: ./build/windows/pos-cevichon-electron\ 1.0.0.msi
+          path: ./build/windows/*.msi # Encuentra cualquier archivo MSI en la carpeta
 
-      # Subir artefactos para Windows
+      # Subir artefactos para Windows .EXE sin importar la versión
       - name: Upload Windows .EXE
         uses: actions/upload-artifact@v4
         with:
           name: pos-cevichon
-          path: ./build/windows/pos-cevichon-electron\ 1.0.0.exe
+          path: ./build/windows/*.exe # Encuentra cualquier archivo EXE en la carpeta
