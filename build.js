@@ -1,5 +1,13 @@
 import { execSync } from "child_process";
 import fs from "fs";
+import { readFileSync, writeFileSync } from "fs";
+
+// Elimina la carpeta 'build' antes de la compilación
+const buildDir = "build";
+if (fs.existsSync(buildDir)) {
+  fs.rmSync(buildDir, { recursive: true, force: true });
+  console.log(`Carpeta '${buildDir}' eliminada correctamente.`);
+}
 
 // Lee el argumento de la plataforma
 const args = process.argv.slice(3);
@@ -30,11 +38,11 @@ switch (platform) {
 }
 
 // Ajusta la ruta de salida en electron-builder.json
-import { readFileSync, writeFileSync } from "fs";
 const electronBuilderConfigPath = "./electron-builder.json";
 const electronBuilderConfig = JSON.parse(
   readFileSync(electronBuilderConfigPath, "utf-8")
 );
+
 electronBuilderConfig.directories.output = outputDir;
 
 // Escribe el archivo electron-builder.json con la nueva configuración
@@ -42,8 +50,6 @@ writeFileSync(
   electronBuilderConfigPath,
   JSON.stringify(electronBuilderConfig, null, 2)
 );
-// Ejecuta electron-builder para la plataforma específica
-execSync(`rm -r build`, { stdio: "inherit" });
 
 // Ejecuta electron-builder para la plataforma específica
 execSync(`npm run dist:${platform}`, { stdio: "inherit" });

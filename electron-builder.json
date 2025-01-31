@@ -4,8 +4,7 @@
   "icon": "./desktopIcon.png",
   "files": [
     "dist-electron/**/*",
-    "dist-react/**/*",
-    "printer-manager/**/*"
+    "dist-react/**/*"
   ],
   "directories": {
     "output": "build/windows"
