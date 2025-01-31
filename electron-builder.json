@@ -1,0 +1,21 @@
+{
+    "appId": "pos.cevichon.app",
+    "icon": "./desktopIcon.png",
+    "files": [
+        "dist-electron/**/*",
+        "dist-react/**/*",
+        "printer-manager/**/*"
+    ],
+    "win": {
+        "target": [
+            "portable",
+            "msi"
+        ]
+    },
+    "mac": {
+        "target": "dmg"
+    },
+    "linux": {
+        "target": "AppImage"
+    }
+}
