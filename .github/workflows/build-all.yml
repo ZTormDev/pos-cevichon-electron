@@ -1,4 +1,4 @@
-name: Build and Upload Artifacts
+name: Build for All platforms
 
 # Este workflow se ejecutará manualmente con workflow_dispatch
 on:
