@@ -1,0 +1,31 @@
+name: Build and Upload Artifacts
+
+# Este workflow se ejecutará manualmente con workflow_dispatch
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v3
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '16'  # Ajusta la versión de Node.js según tu necesidad
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Run build:all
+      run: npm run build:all
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-artifacts
+        path: path/to/artifacts  # Ajusta el path a los artefactos generados
+
