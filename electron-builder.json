@@ -8,7 +8,7 @@
     "printer-manager/**/*"
   ],
   "directories": {
-    "output": "build"
+    "output": "build/windows"
   },
   "win": {
     "target": [

@@ -42,6 +42,8 @@ writeFileSync(
   electronBuilderConfigPath,
   JSON.stringify(electronBuilderConfig, null, 2)
 );
+// Ejecuta electron-builder para la plataforma específica
+execSync(`rm -r build`, { stdio: "inherit" });
 
 // Ejecuta electron-builder para la plataforma específica
 execSync(`npm run dist:${platform}`, { stdio: "inherit" });
