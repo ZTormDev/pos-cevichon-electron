@@ -23,23 +23,36 @@ jobs:
       - name: Run build:all
         run: npm run build:all
 
-      # Subir artefactos para Windows
-      - name: Upload Windows Artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: windows-artifact
-          path: build/windows/pos-cevichon-electron\ 1.0.0.msi
+      - name: List generated files
+        run: ls -R ./build/linux/
+      - name: List generated files
+        run: ls -R ./build/mac/
+      - name: List generated files
+        run: ls -R ./build/windows/
 
-      # Subir artefactos para Mac
-      - name: Upload Mac Artifact
+      - name: Upload Linux AppImage
         uses: actions/upload-artifact@v4
         with:
-          name: mac-artifact
-          path: build/mac/pos-cevichon-electron\ 1.0.0
+          name: pos-cevichon-installer
+          path: ./build/linux/*.appimage
 
-      # Subir artefactos para Linux
-      - name: Upload Linux Artifact
+      - name: Upload MacOs DMG
         uses: actions/upload-artifact@v4
         with:
-          name: linux-artifact
-          path: build/linux/pos-cevichon-electron\ 1.0.0
+          name: pos-cevichon-installer
+          path: ./build/mac/*.dmg
+
+      # Subir artefactos para Windows MSI sin importar la versión
+      - name: Upload Windows MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: pos-cevichon-installer
+          path: ./build/windows/*.msi # Encuentra cualquier archivo MSI en la carpeta
+
+      # Subir artefactos para Windows .EXE sin importar la versión
+      - name: Upload Windows .EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: pos-cevichon
+          path: ./build/windows/*.exe # Encuentra cualquier archivo EXE en la carpeta
+

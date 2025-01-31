@@ -1,0 +1,33 @@
+name: Build for Mac Os
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Making Mac Os Build
+        run: npm run build:mac
+
+      - name: List generated files
+        run: ls -R ./build/mac/
+
+      # Subir artefactos para Windows MSI sin importar la versión
+      - name: Upload MacOs DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: pos-cevichon-installer
+          path: ./build/mac/*.dmg
