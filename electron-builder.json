@@ -1,5 +1,6 @@
 {
   "appId": "pos.cevichon.app",
+  "productName": "PosCevichon",
   "icon": "./desktopIcon.png",
   "files": [
     "dist-electron/**/*",
@@ -7,13 +8,14 @@
     "printer-manager/**/*"
   ],
   "directories": {
-    "output": "build/mac"
+    "output": "build"
   },
   "win": {
     "target": [
       "portable",
       "msi"
-    ]
+    ],
+    "artifactName": "${productName}-${version}-${arch}.${ext}"
   },
   "mac": {
     "target": {
