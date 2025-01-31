@@ -1,21 +1,28 @@
 {
-    "appId": "pos.cevichon.app",
-    "icon": "./desktopIcon.png",
-    "files": [
-        "dist-electron/**/*",
-        "dist-react/**/*",
-        "printer-manager/**/*"
-    ],
-    "win": {
-        "target": [
-            "portable",
-            "msi"
-        ]
-    },
-    "mac": {
-        "target": "dmg"
-    },
-    "linux": {
-        "target": "AppImage"
+  "appId": "pos.cevichon.app",
+  "icon": "./desktopIcon.png",
+  "files": [
+    "dist-electron/**/*",
+    "dist-react/**/*",
+    "printer-manager/**/*"
+  ],
+  "directories": {
+    "output": "build/windows"
+  },
+  "win": {
+    "target": [
+      "portable",
+      "msi"
+    ]
+  },
+  "mac": {
+    "target": {
+      "target": "dmg"
     }
+  },
+  "linux": {
+    "target": {
+      "target": "AppImage"
+    }
+  }
 }
