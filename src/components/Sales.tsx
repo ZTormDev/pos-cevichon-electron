@@ -1,35 +1,104 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 import axios from "axios";
-import { Chart } from "chart.js/auto";
 import Skeleton, { SkeletonTheme } from "react-loading-skeleton";
 import "react-loading-skeleton/dist/skeleton.css";
 
-function Sales() {
-  const [salesData, setSalesData] = useState([]);
-  const [monthlySales, setMonthlySales] = useState(null);
-  const [weeklySales, setWeeklySales] = useState(null);
-  const [dailySales, setDailySales] = useState(null);
-  const [monthlySalesCount, setMonthlySalesCount] = useState(null);
-  const [weeklySalesCount, setWeeklySalesCount] = useState(null);
-  const [dailySalesCount, setDailySalesCount] = useState(null);
-  const [totalEarnings, setTotalEarnings] = useState(0);
-  const [currentMonthEarnings, setCurrentMonthEarnings] = useState(0);
-  const [currentWeekEarnings, setCurrentWeekEarnings] = useState(0);
-  const [currentDayEarnings, setCurrentDayEarnings] = useState(0);
-  const [currentMonthSalesCount, setCurrentMonthSalesCount] = useState(0);
-  const [currentWeekSalesCount, setCurrentWeekSalesCount] = useState(0);
-  const [currentDaySalesCount, setCurrentDaySalesCount] = useState(0);
-  const [totalSalesCount, setTotalSalesCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [topProducts, setTopProducts] = useState([]);
-  const [visibleSale, setVisibleSale] = useState(null);
-  const [catalogProducts, setCatalogProducts] = useState([]);
+// Interfaces for type safety
+interface Product {
+  id: number;
+  name: string;
+}
+
+interface OrderItem {
+  product_id: number;
+  product_name: string;
+  product_quantity: number;
+  product_total: number;
+}
+
+interface Order {
+  order_id?: number;
+  order_total: number;
+  items: OrderItem[];
+}
+
+interface Sale {
+  id: number;
+  order_id: number;
+  sale_date: string;
+  order: Order;
+}
+
+interface ChartData {
+  labels: string[];
+  datasets: Array<{
+    label: string;
+    data: number[];
+    backgroundColor: string;
+  }>;
+}
+
+interface TopProduct {
+  name: string;
+  count: number;
+}
+
+const Sales: React.FC = () => {
+  const [salesData, setSalesData] = useState<Sale[]>([]);
+  const [monthlySales, setMonthlySales] = useState<ChartData | null>(null);
+  const [weeklySales, setWeeklySales] = useState<ChartData | null>(null);
+  const [dailySales, setDailySales] = useState<ChartData | null>(null);
+  const [monthlySalesCount, setMonthlySalesCount] = useState<ChartData | null>(
+    null
+  );
+  const [weeklySalesCount, setWeeklySalesCount] = useState<ChartData | null>(
+    null
+  );
+  const [dailySalesCount, setDailySalesCount] = useState<ChartData | null>(
+    null
+  );
+  const [totalEarnings, setTotalEarnings] = useState<number>(0);
+  const [currentMonthEarnings, setCurrentMonthEarnings] = useState<number>(0);
+  const [currentWeekEarnings, setCurrentWeekEarnings] = useState<number>(0);
+  const [currentDayEarnings, setCurrentDayEarnings] = useState<number>(0);
+  const [currentMonthSalesCount, setCurrentMonthSalesCount] =
+    useState<number>(0);
+  const [currentWeekSalesCount, setCurrentWeekSalesCount] = useState<number>(0);
+  const [currentDaySalesCount, setCurrentDaySalesCount] = useState<number>(0);
+  const [totalSalesCount, setTotalSalesCount] = useState<number>(0);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [topProducts, setTopProducts] = useState<TopProduct[]>([]);
+  const [visibleSale, setVisibleSale] = useState<number | null>(null);
+  const [catalogProducts, setCatalogProducts] = useState<Product[]>([]);
+  const [chartKeys, setChartKeys] = useState({
+    monthly: "monthly-chart",
+    weekly: "weekly-chart",
+    daily: "daily-chart",
+  });
 
   useEffect(() => {
     const fetchSalesData = async () => {
       try {
-        const salesResponse = await axios.get(
+        const salesResponse = await axios.get<{ data: Sale[] }>(
           "https://pos-cevichon-backend-production.up.railway.app/api/sales"
         );
         const sales = salesResponse.data.data;
@@ -47,10 +116,10 @@ function Sales() {
 
     const fetchCatalogProducts = async () => {
       try {
-        const productsResponse = await axios.get(
+        const productsResponse = await axios.get<{ data: Product[] }>(
           "https://pos-cevichon-backend-production.up.railway.app/api/products"
         );
-        setCatalogProducts(productsResponse.data.data); // Asegúrate de usar `productsResponse.data` aquí
+        setCatalogProducts(productsResponse.data.data);
       } catch (error) {
         console.error("Error fetching catalog products:", error);
       }
@@ -63,7 +132,7 @@ function Sales() {
   useEffect(() => {
     if (catalogProducts.length > 0 && salesData.length > 0) {
       const getTopProducts = async () => {
-        const productCounts = {};
+        const productCounts: { [key: string]: number } = {};
 
         salesData.forEach((sale) => {
           const items = sale.order.items;
@@ -75,11 +144,9 @@ function Sales() {
               );
 
               if (product) {
-                if (productCounts[item.product_name]) {
-                  productCounts[item.product_name] += item.product_quantity;
-                } else {
-                  productCounts[item.product_name] = item.product_quantity;
-                }
+                productCounts[item.product_name] =
+                  (productCounts[item.product_name] || 0) +
+                  item.product_quantity;
               }
             }
           });
@@ -96,19 +163,19 @@ function Sales() {
     }
   }, [catalogProducts, salesData]);
 
-  const sortSalesById = (sales) => {
+  const sortSalesById = (sales: Sale[]): Sale[] => {
     return sales.sort((a, b) => b.id - a.id);
   };
 
-  const fetchOrdersAndItems = async (sales) => {
+  const fetchOrdersAndItems = async (sales: Sale[]): Promise<Sale[]> => {
     const sortedSales = sortSalesById(sales);
     return Promise.all(
       sortedSales.map(async (sale) => {
         try {
-          const orderResponse = await axios.get(
+          const orderResponse = await axios.get<Order>(
             `https://pos-cevichon-backend-production.up.railway.app/api/orders/${sale.order_id}`
           );
-          const itemsResponse = await axios.get(
+          const itemsResponse = await axios.get<{ data: OrderItem[] }>(
             `https://pos-cevichon-backend-production.up.railway.app/api/order_items/`
           );
 
@@ -117,7 +184,7 @@ function Sales() {
             order: {
               ...orderResponse.data,
               items: itemsResponse.data.data.filter(
-                (item) => item.order_id === sale.order_id
+                (item) => item.product_id === sale.order_id
               ),
             },
           };
@@ -129,6 +196,7 @@ function Sales() {
           return {
             ...sale,
             order: {
+              order_total: 0,
               items: [],
             },
           };
@@ -137,13 +205,13 @@ function Sales() {
     );
   };
 
-  const processSalesData = (sales) => {
-    const monthlyEarnings = {};
-    const weeklyEarnings = {};
-    const dailyEarnings = {};
-    const monthlyCounts = {};
-    const weeklyCounts = {};
-    const dailyCounts = {};
+  const processSalesData = (sales: Sale[]): void => {
+    const monthlyEarnings: { [key: string]: number } = {};
+    const weeklyEarnings: { [key: string]: number } = {};
+    const dailyEarnings: { [key: string]: number } = {};
+    const monthlyCounts: { [key: string]: number } = {};
+    const weeklyCounts: { [key: string]: number } = {};
+    const dailyCounts: { [key: string]: number } = {};
 
     sales.forEach((sale) => {
       const date = new Date(sale.sale_date);
@@ -237,7 +305,7 @@ function Sales() {
     const currentWeek = `${now.getFullYear()}-${getWeekNumber(now)}`;
     const currentDay = now.toISOString().split("T")[0];
 
-    const getTotalForPeriod = (data, period) => {
+    const getTotalForPeriod = (data: any, period: any) => {
       const filteredData = Object.keys(data).filter((key) => key === period);
       return filteredData.reduce((sum, key) => sum + (data[key] || 0), 0);
     };
@@ -255,7 +323,7 @@ function Sales() {
     setTotalSalesCount(totalCount);
   };
 
-  const calculateTotalEarnings = (sales) => {
+  const calculateTotalEarnings = (sales: Sale[]) => {
     const total = sales.reduce(
       (sum, sale) => sum + (sale.order.order_total || 0),
       0
@@ -263,13 +331,14 @@ function Sales() {
     setTotalEarnings(total);
   };
 
-  const getWeekNumber = (date) => {
+  const getWeekNumber = (date: Date): number => {
     const firstDayOfYear = new Date(date.getFullYear(), 0, 1);
-    const pastDaysOfYear = (date - firstDayOfYear) / 86400000;
+    const pastDaysOfYear =
+      (date.getTime() - firstDayOfYear.getTime()) / 86400000;
     return Math.ceil((pastDaysOfYear + firstDayOfYear.getDay() + 1) / 7);
   };
 
-  const formatNumber = (number) => {
+  const formatNumber = (number: number): string => {
     const parts = number.toString().split(".");
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
     return parts.join(".");
@@ -279,7 +348,7 @@ function Sales() {
   const sortedSales = sortSalesById(salesData);
   const latestSales = sortedSales.slice(0, 4);
 
-  const toggleSaleProducts = (saleId) => {
+  const toggleSaleProducts = (saleId: number) => {
     setVisibleSale(visibleSale === saleId ? null : saleId);
   };
 
@@ -564,20 +633,27 @@ function Sales() {
                       {isVisible ? "arrow_drop_up" : "arrow_drop_down"}
                     </button>
                     <h4 className="gain-number">
-                      +${formatNumber(sale.order.order_total.toFixed(0))}
+                      +$
+                      {formatNumber(Number(sale.order.order_total.toFixed(0)))}
                     </h4>
                   </div>
                   <div className={`sale-products ${isVisible ? "" : "hidden"}`}>
                     <ul>
                       {sale.order.items.map((item) => {
                         return (
-                          <li key={item.product_id}>
+                          <li
+                            key={
+                              item.product_id + Math.floor(Math.random() * 100)
+                            }
+                          >
                             <p>ID: {item.product_id}</p>
                             <p>{item.product_name}</p>
                             <p>Cantidad: {item.product_quantity}</p>
                             <p>
                               Total: $
-                              {formatNumber(item.product_total.toFixed(0))}
+                              {formatNumber(
+                                Number(item.product_total.toFixed(0))
+                              )}
                             </p>
                           </li>
                         );
@@ -619,40 +695,49 @@ function Sales() {
 
         <div className="graphics-container">
           <div className="graphic">
-            {monthlySales && <Bar data={monthlySales} />}
+            {monthlySales && (
+              <Bar key={chartKeys.monthly} data={monthlySales} />
+            )}
             <p>
               Ganancias por Mes: $
-              {formatNumber(currentMonthEarnings.toFixed(0))}
+              {formatNumber(Number(currentMonthEarnings.toFixed(0)))}
             </p>
           </div>
           <div className="graphic">
-            {weeklySales && <Bar data={weeklySales} />}
+            {weeklySales && <Bar key={chartKeys.weekly} data={weeklySales} />}
             <p>
               Ganancias por Semana: $
-              {formatNumber(currentWeekEarnings.toFixed(0))}
+              {formatNumber(Number(currentWeekEarnings.toFixed(0)))}
             </p>
           </div>
           <div className="graphic">
-            {dailySales && <Bar data={dailySales} />}
+            {dailySales && <Bar key={chartKeys.daily} data={dailySales} />}
             <p>
-              Ganancias por Día: ${formatNumber(currentDayEarnings.toFixed(0))}
+              Ganancias por Día: $
+              {formatNumber(Number(currentDayEarnings.toFixed(0)))}
             </p>
           </div>
         </div>
 
-        <h3>Total Ganado: ${formatNumber(totalEarnings.toFixed(0))}</h3>
+        <h3>Total Ganado: ${formatNumber(Number(totalEarnings.toFixed(0)))}</h3>
 
         <div className="graphics-container">
           <div className="graphic">
-            {monthlySalesCount && <Bar data={monthlySalesCount} />}
+            {monthlySalesCount && (
+              <Bar key={chartKeys.monthly} data={monthlySalesCount} />
+            )}
             <p>Número de Ventas por Mes: {currentMonthSalesCount}</p>
           </div>
           <div className="graphic">
-            {weeklySalesCount && <Bar data={weeklySalesCount} />}
+            {weeklySalesCount && (
+              <Bar key={chartKeys.weekly} data={weeklySalesCount} />
+            )}
             <p>Número de Ventas por Semana: {currentWeekSalesCount}</p>
           </div>
           <div className="graphic">
-            {dailySalesCount && <Bar data={dailySalesCount} />}
+            {dailySalesCount && (
+              <Bar key={chartKeys.daily} data={dailySalesCount} />
+            )}
             <p>Número de Ventas por Día: {currentDaySalesCount}</p>
           </div>
         </div>
@@ -666,6 +751,6 @@ function Sales() {
       </p>
     );
   }
-}
+};
 
 export default Sales;
