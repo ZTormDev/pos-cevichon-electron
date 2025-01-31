@@ -7,7 +7,7 @@
     "printer-manager/**/*"
   ],
   "directories": {
-    "output": "build/windows"
+    "output": "build/mac"
   },
   "win": {
     "target": [

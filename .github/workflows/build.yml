@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "16" # Ajusta la versión de Node.js según tu necesidad
+          node-version: "22" # Ajusta la versión de Node.js según tu necesidad
 
       - name: Install dependencies
         run: npm install
@@ -23,9 +23,23 @@ jobs:
       - name: Run build:all
         run: npm run build:all
 
-      - name: Upload build artifacts
+      # Subir artefactos para Windows
+      - name: Upload Windows Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: build-artifacts
-          path: path/to/artifacts # Ajusta el path a los artefactos generados
+          name: windows-artifact
+          path: build/windows/pos-cevichon-electron\ 1.0.0.msi
 
+      # Subir artefactos para Mac
+      - name: Upload Mac Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mac-artifact
+          path: build/mac/pos-cevichon-electron\ 1.0.0
+
+      # Subir artefactos para Linux
+      - name: Upload Linux Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-artifact
+          path: build/linux/pos-cevichon-electron\ 1.0.0
