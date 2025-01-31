@@ -20,7 +20,7 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run build:win
+      - name: Making Windows Build
         run: npm run build:win
 
       # Subir artefactos para Windows
@@ -28,11 +28,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pos-cevichon-installer
-          path: build/windows/pos-cevichon-electron\ 1.0.0.msi
+          path: ./build/windows/pos-cevichon-electron\ 1.0.0.msi
 
       # Subir artefactos para Windows
       - name: Upload Windows .EXE
         uses: actions/upload-artifact@v4
         with:
           name: pos-cevichon
-          path: build/windows/pos-cevichon-electron\ 1.0.0.exe
+          path: ./build/windows/pos-cevichon-electron\ 1.0.0.exe
