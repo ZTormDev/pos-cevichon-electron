@@ -9,23 +9,23 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Check out repository
-      uses: actions/checkout@v3
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-    - name: Set up Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '16'  # Ajusta la versión de Node.js según tu necesidad
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "16" # Ajusta la versión de Node.js según tu necesidad
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Run build:all
-      run: npm run build:all
+      - name: Run build:all
+        run: npm run build:all
 
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: build-artifacts
-        path: path/to/artifacts  # Ajusta el path a los artefactos generados
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: path/to/artifacts # Ajusta el path a los artefactos generados
 
