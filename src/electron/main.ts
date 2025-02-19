@@ -22,8 +22,6 @@ app.on("ready", () => {
     mainWindow.loadFile(path.join(app.getAppPath(), "/dist-react/index.html"));
   }
 
-  mainWindow.webContents.openDevTools();
-
   ipcMain.handle("get-printers", async () => {
     const printers = await mainWindow.webContents.getPrintersAsync();
     return printers.map((printer) => printer.name);
