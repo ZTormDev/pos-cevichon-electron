@@ -21,6 +21,10 @@ const Atm: React.FC = () => {
 
   const ipcRenderer = (window as any).ipcRenderer;
 
+  useEffect(() => {
+    console.log("Shared printer name:", sharedPrinterName);
+  }, [sharedPrinterName]);
+
   const getPrintersList = async () => {
     try {
       const printers = await ipcRenderer.invoke("get-printers");

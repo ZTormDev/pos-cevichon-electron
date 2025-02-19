@@ -4,6 +4,11 @@ import {
   PosPrintOptions,
 } from "@plick/electron-pos-printer";
 
+interface PrintResult {
+  success: boolean;
+  error?: string;
+}
+
 interface ProductoRecibo {
   nombre: string;
   precio: number;
@@ -75,13 +80,14 @@ const formatNumber = (number: number): string => {
 
 const Recibo = async (_printerName: string, datos: DatosRecibo) => {
   const options: PosPrintOptions = {
-    preview: true,
+    preview: false,
     margin: "0 0 0 0",
     copies: 1,
     printerName: _printerName,
     timeOutPerLine: 400,
     pageSize: "58mm",
     boolean: true,
+    silent: true,
   };
 
   const data: PosPrintData[] = [
@@ -192,10 +198,14 @@ const Recibo = async (_printerName: string, datos: DatosRecibo) => {
     },
   ];
 
-  await PosPrinter.print(data, options)
-    .then(console.log)
-    .catch((error: string) => {
+  return PosPrinter.print(data, options)
+    .then(() => {
+      console.log("PRINTED");
+      return { success: true };
+    })
+    .catch((error) => {
       console.error(error);
+      return { success: false, error: error.message };
     });
 };
 
