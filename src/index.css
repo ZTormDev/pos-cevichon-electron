@@ -1163,7 +1163,7 @@ input[type="number"] {
   width: 100%;
   text-align: center;
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   grid-template-rows: 1fr;
   grid-column-gap: 0px;
   grid-row-gap: 0px;
@@ -1207,7 +1207,7 @@ h4 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.5rem;
   padding: 1.5rem;
   border-radius: 0.5rem 0.5rem 0 0;
   justify-content: space-between;
@@ -1232,6 +1232,7 @@ h4 {
 
 .nombre-cliente-container,
 .descuento-container {
+  width: 100%;
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -1250,7 +1251,7 @@ h4 {
 
 .nombre-cliente-container {
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
 }
 
 .descuento-container input {
@@ -2631,6 +2632,21 @@ body *.scale-in {
   align-items: center;
   gap: 0.5rem;
 }
+.print-list-container select option {
+  max-width: 10ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.8rem;
+}
+
+.printer-name-truncated {
+  max-width: 10ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+}
 
 .printer-selection-container label {
   font-size: 1rem;
@@ -2693,6 +2709,43 @@ body *.scale-in {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.iva-container {
+  margin: 0;
+  padding: 0.5rem;
+  border-top: 1px solid #ddd;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.iva-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+#iva-checkbox {
+  width: 1rem;
+  height: 1rem;
+}
+
+.subtotal-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem;
+  margin: 0;
+  width: 100%;
+  margin-block: -1rem;
+}
+
+.subtotal-container h4 {
+  font-size: 1.5rem;
+  font-weight: 700;
 }
 
 /* SECTION OF MOBILE VIEW OR TABLET */

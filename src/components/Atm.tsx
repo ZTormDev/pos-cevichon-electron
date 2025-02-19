@@ -1,10 +1,8 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNotification } from "./useNotification";
 import Swal from "sweetalert2";
-import Recibo from "./Recibo";
-import Printer from "esc-pos-printer";
 
-function Atm() {
+const Atm: React.FC = () => {
   const [customerName, setCustomerName] = useState("");
   const [customerNumber, setCustomerNumber] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
@@ -16,36 +14,23 @@ function Atm() {
   const [cart, setCart] = useState([]);
   const { notify } = useNotification();
   const token = localStorage.getItem("token");
-
   const [printersList, setPrintersList] = useState([]);
   const [sharedPrinterName, setSharedPrinterName] = useState(undefined);
 
-  const showSuccessMessage = () => {
-    const successDiv = document.createElement("div");
-    successDiv.textContent = "Printer Manager is On!";
-    successDiv.style.position = "fixed";
-    successDiv.style.top = "10px";
-    successDiv.style.right = "10px";
-    successDiv.style.backgroundColor = "green";
-    successDiv.style.color = "white";
-    successDiv.style.padding = "10px";
-    successDiv.style.borderRadius = "5px";
-    document.body.appendChild(successDiv);
+  const [includeIva, setIncludeIva] = useState(true);
 
-    setTimeout(() => {
-      document.body.removeChild(successDiv);
-    }, 3000);
-  };
+  const ipcRenderer = (window as any).ipcRenderer;
 
   const getPrintersList = async () => {
     try {
-      const printer = new Printer();
-      const printerList = await printer.getPrinters();
-      setPrintersList(printerList);
-      console.log("Printers list retrieved successfully:", printerList);
-      showSuccessMessage();
+      const printers = await ipcRenderer.invoke("get-printers");
+      setPrintersList(printers);
+
+      if (printers.length > 0) {
+        setSharedPrinterName(printers[0]); // Set first printer as default
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error getting printers:", error);
     }
   };
 
@@ -61,8 +46,8 @@ function Atm() {
   const printersListOptions = useMemo(
     () =>
       printersList.map((item, i) => (
-        <option key={`option-${i}-${item}`} value={item}>
-          {item}
+        <option key={`option-${i}-${item}`} value={item} title={item}>
+          {item.length > 10 ? `${item.substring(0, 15)}...` : item}
         </option>
       )),
     [printersList]
@@ -85,7 +70,7 @@ function Atm() {
 
   useEffect(() => {
     calculateTotal();
-  }, [cart, discount]);
+  }, [cart, discount, includeIva]);
 
   const handleAddProduct = () => {
     setIsActive(!isActive);
@@ -255,6 +240,21 @@ function Atm() {
       .catch((err) => console.error("Failed to make a sale:", err));
   };
 
+  const imprimirTest = () => {
+    const datos = {
+      fecha: "2021-09-01",
+      total: 10000,
+      boletaNumero: 1,
+      productos: [
+        { nombre: "Producto 1", precio: 1000, cantidad: 2, total: 2000 },
+        { nombre: "Producto 2", precio: 2300, cantidad: 1, total: 2300 },
+      ],
+    };
+
+    // Llamas a la función que imprime el recibo
+    imprimirRecibo(datos);
+  };
+
   const completeOrder = () => {
     let orderStatus = "Pendiente";
     let customAddress = document.getElementById("direccion-cliente").value;
@@ -369,9 +369,13 @@ function Atm() {
 
   const imprimirRecibo = async (datos) => {
     try {
-      await Recibo(sharedPrinterName, datos);
+      const result = await ipcRenderer.print(sharedPrinterName, datos);
+      if (!result.success) {
+        throw new Error(result.error);
+      }
     } catch (error) {
       console.error("Error al imprimir el recibo:", error);
+      notify("Error al imprimir el recibo", 5000, "error");
     }
   };
 
@@ -388,10 +392,13 @@ function Atm() {
       0
     );
     const discountAmount = subtotal * (discount / 100);
-    const newTotal = subtotal - discountAmount;
+    const afterDiscount = subtotal - discountAmount;
+
+    // Apply IVA if enabled
+    const finalAmount = includeIva ? afterDiscount * 1.19 : afterDiscount;
 
     // Redondear a entero
-    const roundedTotal = Math.round(newTotal);
+    const roundedTotal = Math.round(finalAmount);
 
     const formattedTotal = formatNumber(roundedTotal);
     setTotal(formattedTotal);
@@ -528,9 +535,9 @@ function Atm() {
               <div className="print-list-container">
                 <select
                   id="printer-select"
-                  className="w-full p-2 border rounded-md bg-white"
-                  value={sharedPrinterName}
+                  value={sharedPrinterName || ""}
                   onChange={(e) => setSharedPrinterName(e.target.value)}
+                  className="w-full p-2 border rounded"
                 >
                   <option value="">Seleccionar impresora</option>
                   {printersListOptions}
@@ -538,11 +545,13 @@ function Atm() {
                 <button
                   onClick={handleRefreshPrinters}
                   className="refresh-printers-button"
-                  title="Actualizar lista de impresoras"
                 >
                   <span className="material-symbols-rounded">refresh</span>
                 </button>
               </div>
+              <button className="hidden" onClick={imprimirTest}>
+                TEST
+              </button>
             </div>
 
             <div className="nombre-cliente-container">
@@ -618,7 +627,34 @@ function Atm() {
                 onChange={handleDiscountChange}
               />
             </div>
+            <div className="iva-container">
+              <div className="iva-toggle">
+                <label htmlFor="iva-checkbox">Incluir IVA (19%)</label>
+                <input
+                  type="checkbox"
+                  id="iva-checkbox"
+                  checked={includeIva}
+                  onChange={(e) => setIncludeIva(e.target.checked)}
+                />
+              </div>
+            </div>
+            <div className="subtotal-container">
+              <h4>Subtotal: </h4>
+              <h4 id="subtotal-cart">
+                $
+                {formatNumber(
+                  Math.round(
+                    cart.reduce(
+                      (sum, item) => sum + item.price * item.quantity,
+                      0
+                    ) *
+                      (1 - discount / 100)
+                  )
+                )}
+              </h4>
+            </div>
           </div>
+
           <div className="total-container">
             <h4>Total: </h4>
             <h4 id="total-cart">${total}</h4>
@@ -632,6 +668,6 @@ function Atm() {
       </div>
     </div>
   );
-}
+};
 
 export default Atm;
