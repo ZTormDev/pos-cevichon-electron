@@ -80,12 +80,12 @@ const formatNumber = (number: number): string => {
 
 const Recibo = async (_printerName: string, datos: DatosRecibo) => {
   const options: PosPrintOptions = {
-    preview: false,
+    preview: true,
     margin: "0 0 0 0",
     copies: 1,
     printerName: _printerName,
     timeOutPerLine: 400,
-    pageSize: "58mm",
+    pageSize: "57mm",
     boolean: true,
     silent: true,
   };
@@ -152,10 +152,10 @@ const Recibo = async (_printerName: string, datos: DatosRecibo) => {
           { type: "text", value: `$${formatNumber(datos.total)}` },
         ],
         [
-          { type: "text", value: "Total (+IVA)" },
+          { type: "text", value: "IVA" },
           { type: "text", value: "" },
           { type: "text", value: "" },
-          { type: "text", value: `$${formatNumber(datos.total * 1.19)}` }, // iva 19%
+          { type: "text", value: `$${formatNumber(datos.total * 0.19)}` }, // iva 19%
         ],
       ],
       tableHeaderStyle: {
